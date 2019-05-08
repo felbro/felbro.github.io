@@ -11,6 +11,45 @@
 </head>
 
 <body>
-  This is the body
+  <form>
+		Search for news<br>
+		<input type="text" name="firstname">
+		<br> <br>
+		<input type="submit" value="Search">
+	</form>
+
+  <button onclick="test()">Fuck yea</button>
+  <button onclick="test_search()">Test search</button>
+
+
+
+  <script>
+    function test() {
+      var banan = [0.3, 0.5, 0.1];
+      window.localStorage.setItem("rodrigo", JSON.stringify(banan));
+      var my_item = window.localStorage.getItem("rodrigo");
+      if (my_item !== null) {
+        var a = JSON.parse(my_item);
+        alert(a[0]);
+      }
+
+    }
+
+    function test_search() {
+      const Http = new XMLHttpRequest();
+      const url = 'http://35.195.228.54:9200/estest/_search?q=Test'
+      Http.open("GET", url);
+      Http.send();
+
+      Http.onreadystatechange=(e)=> {
+        console.log(Http.responseText);
+        
+      }
+    }
+
+  </script>
+
+
 </body>
 </html>
+
