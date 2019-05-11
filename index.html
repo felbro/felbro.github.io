@@ -47,7 +47,6 @@
       }
 
       function update_topic_preferences(document_topic_distribution) {
-
         // TODO
         // Probably incomplete and incorrect.
         var usr_topic_pref = get_usr_topic_pref();
@@ -79,20 +78,21 @@
         var usr_topic_pref = get_usr_topic_pref();
 
         // Sorting function
-        let query = {};
-        query["query"] = {};
-        query["query"]["function_score"] = {};
-        query["query"]["function_score"] = {
-          script_score: {
-            script: {
-              lang: "painless",
-              params: { usr_topic_pref },
-              source:
-                "double topic_dist = 0; \
+        let query = {
+          query: {
+            function_score: {
+              script_score: {
+                script: {
+                  lang: "painless",
+                  params: { usr_topic_pref },
+                  source:
+                    "double topic_dist = 0; \
                  for (int i = 0; i < params.usr_topic_pref.length && i < doc['points'].length; i++) { \
                    topic_dist += 1.0 / (1.0 + Math.abs(params.usr_topic_pref[i] - doc['points'][i])); \
                  } \
                  return topic_dist;"
+                }
+              }
             }
           }
         };
