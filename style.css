@@ -1,0 +1,45 @@
+body {
+    margin: 5%;
+}
+
+h1 {
+    font-family: sans-serif;
+    text-align: center;
+}
+
+div.search_tools {
+    position: -webkit-stikcy;
+    position: sticky;
+    top: 0;
+
+    margin-bottom: 0.1em;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    padding-left: 5%;
+    padding-right: 5%;
+    background-color: white;
+
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.search_tools input {
+    margin: 1%;
+}
+
+#search_input {
+    flex-grow: 8;
+}
+
+.search_btn {
+    flex-grow: 1;
+}
+
+
+
+.hitbox {
+    border-style: solid;
+    border-width: 0.1em;
+    margin-top: 0.2%
+}
+
