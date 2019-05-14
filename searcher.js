@@ -43,7 +43,7 @@ function update_topic_preferences(document_topic_distribution) {
     // Probably incomplete and incorrect.
     var usr_topic_pref = get_usr_topic_pref();
 
-    const alpha = 0.95;
+    const alpha = 0;
     for (let i = 0; i < usr_topic_pref.length; i++) {
         usr_topic_pref[i] =
             usr_topic_pref[i] * alpha +
@@ -111,6 +111,7 @@ function get_usr_topic_pref() {
 function get_suggested_news_query() {
 
     var usr_topic_pref = get_usr_topic_pref();
+    console.log(usr_topic_pref)
     var usr_euc_len = Math.sqrt(
         usr_topic_pref.reduce((acc, e) => {
             return acc + e * e;
@@ -121,16 +122,16 @@ function get_suggested_news_query() {
         query: {
             function_score: {
                 functions: [
-                    {
-                        gauss: {
-                            timestamp: {
-                                origin: "now",
-                                scale: "1d",
-                                decay: "0.5"
-                            }
-                        } //,
-                        //weight: 1
-                    },
+                    // {
+                    //     gauss: {
+                    //         timestamp: {
+                    //             origin: "now",
+                    //             scale: "1d",
+                    //             decay: "0.5"
+                    //         }
+                    //     } //,
+                    //     //weight: 1
+                    // },
                     {
                         script_score: {
                             script: {
@@ -139,12 +140,23 @@ function get_suggested_news_query() {
                                 source:
                                     "double cos_sim = 0; \
                         double category_euc_len = 0; \
+                        cos_sim += params['_source']['category_probs'][0] * " + usr_topic_pref[0] + ";\
+                        cos_sim += params['_source']['category_probs'][1] * " + usr_topic_pref[1] + ";\
+                        cos_sim += params['_source']['category_probs'][2] * " + usr_topic_pref[2] + ";\
+                        cos_sim += params['_source']['category_probs'][3] * " + usr_topic_pref[3] + ";\
+                        cos_sim += params['_source']['category_probs'][4] * " + usr_topic_pref[4] + ";\
+                        cos_sim += params['_source']['category_probs'][5] * " + usr_topic_pref[5] + ";\
+                        cos_sim += params['_source']['category_probs'][6] * " + usr_topic_pref[6] + ";\
+                        cos_sim += params['_source']['category_probs'][7] * " + usr_topic_pref[7] + ";\
+                        cos_sim += params['_source']['category_probs'][8] * " + usr_topic_pref[8] + ";\
                         for (int i = 0; i < params.usr_topic_pref.length && i < doc['category_probs'].length; i++) { \
-                          cos_sim += params.usr_topic_pref[i] * doc['category_probs'][i]; \
-                          category_euc_len += Math.pow(doc['category_probs'][i], 2); \
+                            category_euc_len += doc['category_probs'][i] * doc['category_probs'][i]; \
                         } \
                         return cos_sim / (params.usr_euc_len * Math.sqrt(category_euc_len)); \
                         "
+                        //                         cos_sim += doc['category_probs'][0] * " + usr_topic_pref[0] + "+doc['category_probs'][1] * " + usr_topic_pref[1] + "+doc['category_probs'][2] * " + usr_topic_pref[2] + "+doc['category_probs'][2] * " + usr_topic_pref[3] + "+doc['category_probs'][3] * " + usr_topic_pref[4] + "+doc['category_probs'][4] * " + usr_topic_pref[5] + "+doc['category_probs'][5] * " + usr_topic_pref[6] + "+doc['category_probs'][7] * " + usr_topic_pref[7] + "+doc['category_probs'][8] * " + usr_topic_pref[8] + ";\
+                        //                         String debug = \"\" + doc['category_probs'][0] + " + usr_topic_pref[0] + "+doc['category_probs'][1] + " + usr_topic_pref[1] + "+doc['category_probs'][2] + " + usr_topic_pref[2] + "+doc['category_probs'][2] + " + usr_topic_pref[3] + "+doc['category_probs'][3] + " + usr_topic_pref[4] + "+doc['category_probs'][4] + " + usr_topic_pref[5] + "+doc['category_probs'][5] + " + usr_topic_pref[6] + "+doc['category_probs'][7] + " + usr_topic_pref[7] + "+doc['category_probs'][8] + " + usr_topic_pref[8] + ";\
+
                             }
                         }
                     }
@@ -156,6 +168,7 @@ function get_suggested_news_query() {
 
 function show_results() {
     var text = "";
+    console.log(hit_results);
     hit_results.forEach((hit, i) => {
         text += "<div class='hitbox'>";
         text += hit["_source"]["title"] + "<br>";
