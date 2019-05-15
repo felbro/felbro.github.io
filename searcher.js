@@ -1,4 +1,6 @@
 const index = "news";
+const server =
+    "https://cors-anywhere.herokuapp.com/http://35.228.191.117:9200/";
 
 const topic_classes = [
     "Autos",
@@ -49,11 +51,7 @@ function update_clicks_for_document(id) {
         method: "POST",
         dataType: "json",
         contentType: "application/json",
-        url:
-            "https://cors-anywhere.herokuapp.com/http://35.195.228.54:9200/" +
-            index +
-            "/_update/" +
-            id,
+        url: server + index + "/_update/" + id,
         data: JSON.stringify(update_query)
     })
         .done(res => {
@@ -81,7 +79,6 @@ function update_topic_preferences(document_topic_distribution) {
 }
 
 function update_geo_preferences(document_geo_distribution) {
-
     var usr_geo_pref = get_usr_geo_pref();
 
     const alpha = 0.95;
@@ -105,14 +102,11 @@ function suggest_news() {
         method: "POST",
         dataType: "json",
         contentType: "application/json",
-        url:
-            "https://cors-anywhere.herokuapp.com/http://35.195.228.54:9200/" +
-            index +
-            "/_search",
+        url: server + index + "/_search",
         data: JSON.stringify(query)
     })
         .done(res => {
-          console.log(res);
+            console.log(res);
             hit_results = res["hits"]["hits"];
             show_results();
         })
@@ -129,14 +123,11 @@ function search() {
         method: "POST",
         dataType: "json",
         contentType: "application/json",
-        url:
-            "https://cors-anywhere.herokuapp.com/http://35.195.228.54:9200/" +
-            index +
-            "/_search",
+        url: server + index + "/_search",
         data: JSON.stringify(query)
     })
         .done(res => {
-          console.log(res);
+            console.log(res);
             hit_results = res["hits"]["hits"];
             show_results();
         })
@@ -202,17 +193,16 @@ function get_search_query() {
         query: {
             function_score: {
                 query: {
-                  multi_match: {
-                      query: document.getElementById("search_input").value,
-                      fields: ["title", "text"]
-                  }
+                    multi_match: {
+                        query: document.getElementById("search_input").value,
+                        fields: ["title", "text"]
+                    }
                 },
                 functions: [
                     {
                         field_value_factor: {
                             field: "clicks",
-                            modifier: "sqrt",
-                            factor: 0.25,
+                            modifier: "log1p",
                             missing: 1
                         }
                     },
@@ -220,7 +210,7 @@ function get_search_query() {
                         exp: {
                             timestamp: {
                                 origin: "now",
-                                scale: "1d",
+                                scale: "3d",
                                 decay: "0.5"
                             }
                         }
@@ -234,7 +224,7 @@ function get_search_query() {
                                     usr_topic_euc_len: usr_topic_euc_len,
                                     usr_geo_pref: usr_geo_pref,
                                     usr_geo_euc_len: usr_geo_euc_len,
-                                    geo_sim_mul: 0.5,
+                                    geo_sim_mul: 0.125,
                                     topic_sim_mul: 1
                                 },
                                 source: get_cosine_similarity_script()
@@ -269,8 +259,7 @@ function get_suggested_news_query() {
                     {
                         field_value_factor: {
                             field: "clicks",
-                            modifier: "sqrt",
-                            factor: 0.25,
+                            modifier: "log1p",
                             missing: 1
                         }
                     },
@@ -278,7 +267,7 @@ function get_suggested_news_query() {
                         exp: {
                             timestamp: {
                                 origin: "now",
-                                scale: "1d",
+                                scale: "3d",
                                 decay: "0.5"
                             }
                         }
@@ -292,7 +281,7 @@ function get_suggested_news_query() {
                                     usr_topic_euc_len: usr_topic_euc_len,
                                     usr_geo_pref: usr_geo_pref,
                                     usr_geo_euc_len: usr_geo_euc_len,
-                                    geo_sim_mul: 0.5,
+                                    geo_sim_mul: 0.125,
                                     topic_sim_mul: 1
                                 },
                                 source: get_cosine_similarity_script()
