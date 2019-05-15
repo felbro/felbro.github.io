@@ -206,7 +206,6 @@ function get_search_query() {
         fields: ["title", "text"]
     };
     if (document.getElementById("phrase_query").checked) {
-        console.log("is checked")
         match_query["type"] = "phrase";
     }
 
@@ -349,7 +348,7 @@ function show_results() {
         text += "</div>";
         text +=
             "<p class='content'>" +
-            hit["_source"]["text"].substring(0, 300) +
+            hit["_source"]["text"].substring(0, 300) + "..." +
             "</p>";
         text +=
             '<input type="button" class="continue_btn" value="Continue reading..." onclick="register_click(' +
@@ -357,6 +356,9 @@ function show_results() {
             ')"/>';
         text += "</div>";
     });
+    if (text === "") {
+        text = "No results were found..."
+    }
     document.getElementById("results").innerHTML = text;
 }
 
