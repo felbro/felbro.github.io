@@ -17,20 +17,23 @@ var hit_results = [];
 // Called when the user clicks on a doc.
 function register_click(hit_index) {
     const hit = hit_results[hit_index];
-    show_doc(hit["_source"]["title"], hit["_source"]["text"]);
+    show_doc(hit);
     update_clicks_for_document();
     update_topic_preferences(hit["_source"]["category_probs"]);
 }
 
-function show_doc(title, text) {
+function show_doc(hit) {
     // TODO
-    t = "<div class='hitbox'>";
-    t += title + "<br><br>";
-    t += text + "<br>";
-    t +=
-        '<input type="button" value="Back to suggested news..." onclick="show_results()"/>';
-    t += "</div>";
-    document.getElementById("results").innerHTML = t;
+    text = "<div class='hitbox'>";
+    text += "<h3 class='headline'>" + hit["_source"]["title"] + "</h3>";
+    text += "<div class='subtitle'>";
+    text += "<p class='source'><a href="+hit["_source"]["source"]+">" + get_source_from_url(hit["_source"]["source"]) + "</a></p>";
+    text += "<p class='date'>" + unix_time_to_date(hit["_source"]["timestamp"]) + "</p>";
+    text += "</div>"
+    text += "<p class='content'>" + hit["_source"]["text"] + "</p>";
+    text += '<input type="button" class="continue_btn" value="Back to suggested news..." onclick="show_results()"/>';
+    text += "</div>";
+    document.getElementById("results").innerHTML = text;
 }
 
 function update_clicks_for_document() {
@@ -140,16 +143,8 @@ function get_suggested_news_query() {
                                 source:
                                     "double cos_sim = 0; \
                         double category_euc_len = 0; \
-                        cos_sim += params['_source']['category_probs'][0] * " + usr_topic_pref[0] + ";\
-                        cos_sim += params['_source']['category_probs'][1] * " + usr_topic_pref[1] + ";\
-                        cos_sim += params['_source']['category_probs'][2] * " + usr_topic_pref[2] + ";\
-                        cos_sim += params['_source']['category_probs'][3] * " + usr_topic_pref[3] + ";\
-                        cos_sim += params['_source']['category_probs'][4] * " + usr_topic_pref[4] + ";\
-                        cos_sim += params['_source']['category_probs'][5] * " + usr_topic_pref[5] + ";\
-                        cos_sim += params['_source']['category_probs'][6] * " + usr_topic_pref[6] + ";\
-                        cos_sim += params['_source']['category_probs'][7] * " + usr_topic_pref[7] + ";\
-                        cos_sim += params['_source']['category_probs'][8] * " + usr_topic_pref[8] + ";\
                         for (int i = 0; i < params.usr_topic_pref.length && i < doc['category_probs'].length; i++) { \
+                            cos_sim += params['_source']['category_probs'][i] * params.usr_topic_pref[i];\
                             category_euc_len += doc['category_probs'][i] * doc['category_probs'][i]; \
                         } \
                         return cos_sim / (params.usr_euc_len * Math.sqrt(category_euc_len)); \
@@ -171,15 +166,38 @@ function show_results() {
     console.log(hit_results);
     hit_results.forEach((hit, i) => {
         text += "<div class='hitbox'>";
-        text += hit["_source"]["title"] + "<br>";
-        text += hit["_source"]["text"].substring(0, 300) + "<br>";
-        text +=
-            '<input type="button" value="Continue reading..." onclick="register_click(' +
+        text += "<h3 class='headline'>" + hit["_source"]["title"] + "</h3>";
+        text += "<div class='subtitle'>";
+        text += "<p class='source'>" + get_source_from_url(hit["_source"]["source"]) + "</p>";
+        text += "<p class='date'>" + unix_time_to_date(hit["_source"]["timestamp"]) + "</p>";
+        text += "</div>"
+        text += "<p class='content'>" + hit["_source"]["text"].substring(0, 300) + "</p>";
+        text += '<input type="button" class="continue_btn" value="Continue reading..." onclick="register_click(' +
             i +
             ')"/>';
         text += "</div>";
     });
     document.getElementById("results").innerHTML = text;
+}
+
+function unix_time_to_date(time) {
+    date = new Date(time);
+
+    var months_arr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    var year = date.getFullYear();
+    var month = months_arr[date.getMonth()];
+    var day = date.getDate();
+    var hour = "0" + date.getHours();
+    var min = "0" + date.getMinutes();
+
+    return day + ' ' + month + ', ' + year + '; ' + hour.substr(-2) + ':' + min.substr(-2);
+}
+
+function get_source_from_url(url) {
+    result = url.replace(/^(https?:|)\/\//, "");
+    result = result.substr(0, result.indexOf('/'));
+    return result;
 }
 
 // Get the input field
