@@ -25,6 +25,7 @@ div.search_tools {
 
     display: flex;
     flex-flow: row wrap;
+    align-items: center;
 }
 
 .subtitle {
@@ -33,6 +34,10 @@ div.search_tools {
     font-size: 0.8em;
     font-family: sans-serif;
     color: grey;
+}
+
+.reset_btn {
+    float:right;
 }
 
 .headline {
@@ -67,6 +72,11 @@ div.search_tools {
 
 .search_btn {
     flex-grow: 1;
+}
+
+#phrase_query {
+    flex-grow: 1;
+    
 }
 
 .hitbox {
