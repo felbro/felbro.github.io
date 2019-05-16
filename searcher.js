@@ -220,6 +220,7 @@ function get_search_query() {
                         field_value_factor: {
                             field: "clicks",
                             modifier: "log1p",
+                            factor: 50,
                             missing: 1
                         }
                     },
@@ -227,7 +228,7 @@ function get_search_query() {
                         exp: {
                             timestamp: {
                                 origin: "now",
-                                scale: "3d",
+                                scale: "2d",
                                 decay: "0.5"
                             }
                         }
@@ -277,6 +278,7 @@ function get_suggested_news_query() {
                         field_value_factor: {
                             field: "clicks",
                             modifier: "log1p",
+                            factor: 50,
                             missing: 1
                         }
                     },
@@ -284,7 +286,7 @@ function get_suggested_news_query() {
                         exp: {
                             timestamp: {
                                 origin: "now",
-                                scale: "3d",
+                                scale: "2d",
                                 decay: "0.5"
                             }
                         }
