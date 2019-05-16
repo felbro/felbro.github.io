@@ -210,7 +210,7 @@ function get_search_query() {
                         field_value_factor: {
                             field: "clicks",
                             modifier: "log1p",
-                            factor: 50,
+                            factor: 100,
                             missing: 1
                         }
                     },
@@ -362,7 +362,7 @@ function show_results() {
     } else {
         next_from = search_from + search_size;
         text +=
-            '<input type="button" class="continue_btn" value="More results..." onclick="' +
+            '<input type="button" class="continue_btn" value="Next page" onclick="' +
             search_type +
             "(" +
             next_from +
