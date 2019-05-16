@@ -15,6 +15,10 @@ const topic_classes = [
 ];
 
 var hit_results = [];
+var search_from = 0;
+var search_type = "search";
+var search_size = 20;
+var date = new Date();
 
 function reset_preferences() {
     window.localStorage.clear();
@@ -27,7 +31,7 @@ function register_click(hit_index) {
     update_clicks_for_document(hit["_id"]);
     update_topic_preferences(hit["_source"]["category_probs"]);
     console.log("hit: ", hit);
-    //update_geo_preferences(hit["_source"]["geography_probs"]);
+    update_geo_preferences(hit["_source"]["geography_probs"]);
 }
 
 function show_doc(hit) {
@@ -78,7 +82,7 @@ function update_clicks_for_document(id) {
 function update_topic_preferences(document_topic_distribution) {
     var usr_topic_pref = get_usr_topic_pref();
 
-    const alpha = 0.8;
+    const alpha = 0.9;
     for (let i = 0; i < usr_topic_pref.length; i++) {
         usr_topic_pref[i] =
             usr_topic_pref[i] * alpha +
@@ -94,7 +98,7 @@ function update_topic_preferences(document_topic_distribution) {
 function update_geo_preferences(document_geo_distribution) {
     var usr_geo_pref = get_usr_geo_pref();
 
-    const alpha = 0.8;
+    const alpha = 0.9;
     for (let i = 0; i < usr_geo_pref.length; i++) {
         usr_geo_pref[i] =
             usr_geo_pref[i] * alpha +
@@ -107,8 +111,10 @@ function update_geo_preferences(document_geo_distribution) {
     );
 }
 
-function suggest_news() {
+function suggest_news(from) {
     // Sorting function
+    search_from = from;
+    search_type = "suggest_news";
     let query = get_suggested_news_query();
 
     $.ajax({
@@ -128,7 +134,9 @@ function suggest_news() {
         });
 }
 
-function search() {
+function search(from) {
+    search_from = from;
+    search_type = "search";
     // Sorting function
     let query = get_search_query();
     $.ajax({
@@ -147,26 +155,6 @@ function search() {
             console.log(data);
         });
 }
-
-//function search() {
-//    // TODO: Rank this according to tf-idf and popularity.
-//    const Http = new XMLHttpRequest();
-//    const url =
-//        "https://cors-anywhere.herokuapp.com/http://35.195.228.54:9200/" +
-//        index +
-//        "/_search?q=" +
-//        document.getElementById("search_input").value;
-//
-//    Http.open("GET", url);
-//    Http.send();
-//
-//    document.getElementById("results").innerHTML = "Loading...";
-//
-//    Http.onreadystatechange = e => {
-//        hit_results = JSON.parse(Http.responseText)["hits"]["hits"];
-//        show_results();
-//    };
-//}
 
 function get_usr_topic_pref() {
     var usr_topic_pref = window.localStorage.getItem("topic_preferences");
@@ -210,6 +198,8 @@ function get_search_query() {
     }
 
     return {
+        from: search_from,
+        size: search_size,
         query: {
             function_score: {
                 query: {
@@ -229,7 +219,7 @@ function get_search_query() {
                             timestamp: {
                                 origin: "now",
                                 scale: "2d",
-                                decay: "0.5"
+                                decay: "0.7"
                             }
                         }
                     },
@@ -242,7 +232,7 @@ function get_search_query() {
                                     usr_topic_euc_len: usr_topic_euc_len,
                                     usr_geo_pref: usr_geo_pref,
                                     usr_geo_euc_len: usr_geo_euc_len,
-                                    geo_sim_mul: 0.5,
+                                    geo_sim_mul: 0.25,
                                     topic_sim_mul: 1
                                 },
                                 source: get_cosine_similarity_script()
@@ -270,10 +260,18 @@ function get_suggested_news_query() {
         })
     );
 
+    console.log("show results from " + search_from)
     return {
+        from: search_from,
+        size: search_size,
         query: {
             function_score: {
                 functions: [
+                    {
+                        random_score: {
+                            seed: date.getTime()
+                        }
+                    },
                     {
                         field_value_factor: {
                             field: "clicks",
@@ -287,7 +285,7 @@ function get_suggested_news_query() {
                             timestamp: {
                                 origin: "now",
                                 scale: "2d",
-                                decay: "0.5"
+                                decay: "0.7"
                             }
                         }
                     },
@@ -300,7 +298,7 @@ function get_suggested_news_query() {
                                     usr_topic_euc_len: usr_topic_euc_len,
                                     usr_geo_pref: usr_geo_pref,
                                     usr_geo_euc_len: usr_geo_euc_len,
-                                    geo_sim_mul: 0.5,
+                                    geo_sim_mul: 0.25,
                                     topic_sim_mul: 1
                                 },
                                 source: get_cosine_similarity_script()
@@ -350,7 +348,8 @@ function show_results() {
         text += "</div>";
         text +=
             "<p class='content'>" +
-            hit["_source"]["text"].substring(0, 300) + "..." +
+            hit["_source"]["text"].substring(0, 300) +
+            "..." +
             "</p>";
         text +=
             '<input type="button" class="continue_btn" value="Continue reading..." onclick="register_click(' +
@@ -359,7 +358,15 @@ function show_results() {
         text += "</div>";
     });
     if (text === "") {
-        text = "No results were found..."
+        text = "No results were found...";
+    } else {
+        next_from = search_from + search_size;
+        text +=
+            '<input type="button" class="continue_btn" value="More results..." onclick="' +
+            search_type +
+            "(" +
+            next_from +
+            ')"/>';
     }
     document.getElementById("results").innerHTML = text;
 }
