@@ -218,7 +218,7 @@ function get_search_query() {
                         exp: {
                             timestamp: {
                                 origin: "now",
-                                scale: "2d",
+                                scale: "4d",
                                 decay: "0.7"
                             }
                         }
