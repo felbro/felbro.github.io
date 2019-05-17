@@ -168,7 +168,7 @@ function get_usr_topic_pref() {
 function get_usr_geo_pref() {
     var usr_geo_pref = window.localStorage.getItem("geo_preferences");
     if (usr_geo_pref === null) {
-        return Array(7).fill(1.0 / 7.0);
+        return Array(8).fill(1.0 / 8.0);
     } else {
         return JSON.parse(usr_geo_pref);
     }
